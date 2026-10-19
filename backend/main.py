@@ -25,6 +25,7 @@ from app.database.connection import (
 app = FastAPI(title="DARLING Robot API")
 
 FRONTEND_ORIGINS = [
+    "https://darling-ai-sigma.vercel.app",
     "http://localhost:5500",
     "http://127.0.0.1:5500",
     "http://localhost:5501",
@@ -82,15 +83,15 @@ def create_token(user_id: int, username: str):
 
 
 def set_session_cookie(response: Response, token: str, request: Request):
-    is_https = request.url.scheme == "https"
+    is_production = os.environ.get("ENVIRONMENT") == "production"
 
     response.set_cookie(
         key=COOKIE_NAME,
         value=token,
         max_age=SESSION_HOURS * 60 * 60,
         httponly=True,
-        secure=is_https,
-        samesite="lax",
+        secure=is_production,
+        samesite="none" if is_production else "lax",
         path="/"
     )
 
@@ -263,4 +264,4 @@ def logout(request: Request, response: Response):
         samesite="lax"
     )
 
-    return {"message": "Logged out successfully."}
+    return {"message": "Logged out successfully."}  
