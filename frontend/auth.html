@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DARLING | Your AI Companion</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="auth.css">
+</head>
+
+<body>
+
+    <div class="background-glow glow-one"></div>
+    <div class="background-glow glow-two"></div>
+
+    <div class="stars" id="stars"></div>
+
+    <main class="page-container">
+
+        <section class="robot-section">
+
+            <div class="orbit orbit-one"></div>
+            <div class="orbit orbit-two"></div>
+
+            <div class="robot-heart">
+                <div class="heart-core">♥</div>
+                <div class="heart-ring"></div>
+                <div class="heart-ring ring-two"></div>
+            </div>
+
+            <div class="robot-status">
+                <span class="status-dot"></span>
+                DARLING SYSTEM ONLINE
+            </div>
+
+            <h1>Meet Your <span>DARLING</span></h1>
+
+            <p class="robot-description">
+                More than a robot.<br>
+                Your personal AI companion.
+            </p>
+
+            <div class="feature-list">
+                <div class="feature">
+                    <span>♡</span>
+                    Personal Memory
+                </div>
+
+                <div class="feature">
+                    <span>✦</span>
+                    Smart Conversations
+                </div>
+
+                <div class="feature">
+                    <span>⌘</span>
+                    Your Own AI Robot
+                </div>
+            </div>
+
+        </section>
+
+        <section class="auth-section">
+
+            <div class="auth-card" id="authCard">
+
+                <div class="card-top">
+                    <div class="mini-logo">D<span>♥</span></div>
+
+                    <div class="welcome-label">
+                        <span class="tiny-dot"></span>
+                        WELCOME TO DARLING
+                    </div>
+                </div>
+
+                <div class="form-heading">
+                    <h2 id="formTitle">Welcome Back!</h2>
+
+                    <p id="formSubtitle">
+                        Login to continue your journey.
+                    </p>
+                </div>
+
+                <div class="tab-switch">
+                    <button
+                        type="button"
+                        class="tab active"
+                        id="loginTab">
+                        Login
+                    </button>
+
+                    <button
+                        type="button"
+                        class="tab"
+                        id="registerTab">
+                        Create Account
+                    </button>
+
+                    <div class="tab-indicator" id="tabIndicator"></div>
+                </div>
+
+                <form id="authForm">
+
+                    <div class="field-group register-only hidden" id="displayNameGroup">
+                        <label for="displayName">Your Name</label>
+
+                        <div class="input-wrap">
+                            <span class="input-icon">♡</span>
+
+                            <input
+                                type="text"
+                                id="displayName"
+                                name="display_name"
+                                placeholder="Enter your name"
+                                maxlength="60"
+                                autocomplete="name">
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="username">Username</label>
+
+                        <div class="input-wrap">
+                            <span class="input-icon">♙</span>
+
+                            <input
+                                type="text"
+                                id="username"
+                                name="username"
+                                placeholder="Enter your username"
+                                minlength="3"
+                                maxlength="30"
+                                autocomplete="username"
+                                required>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="password">Password</label>
+
+                        <div class="input-wrap">
+                            <span class="input-icon">♧</span>
+
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                placeholder="Enter your password"
+                                minlength="8"
+                                maxlength="128"
+                                autocomplete="current-password"
+                                required>
+
+                            <button
+                                type="button"
+                                class="password-toggle"
+                                id="passwordToggle"
+                                aria-label="Show password">
+                                ◉
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="field-group register-only hidden" id="confirmGroup">
+                        <label for="confirmPassword">Confirm Password</label>
+
+                        <div class="input-wrap">
+                            <span class="input-icon">♡</span>
+
+                            <input
+                                type="password"
+                                id="confirmPassword"
+                                placeholder="Confirm your password"
+                                minlength="8"
+                                maxlength="128"
+                                autocomplete="new-password">
+                        </div>
+                    </div>
+
+                    <div class="form-options" id="loginOptions">
+                        <label class="remember-option">
+                            <input type="checkbox" id="rememberMe">
+                            <span>Remember this device</span>
+                        </label>
+
+                        <span class="secure-label">🔒 Secure login</span>
+                    </div>
+
+                    <button type="submit" class="submit-button" id="submitButton">
+                        <span id="submitText">Login to DARLING</span>
+                        <span class="button-arrow">↗</span>
+                    </button>
+
+                    <div
+                        class="message-box"
+                        id="messageBox"
+                        role="status"
+                        aria-live="polite">
+                    </div>
+
+                </form>
+
+                <div class="divider">
+                    <span></span>
+                    <p>YOUR PERSONAL AI SPACE</p>
+                    <span></span>
+                </div>
+
+                <p class="switch-text">
+                    <span id="switchMessage">New to DARLING?</span>
+
+                    <button type="button" id="switchButton">
+                        Create account
+                    </button>
+                </p>
+
+                <div class="card-footer">
+                    <span>♥</span>
+                    Made for your world
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="auth.js"></script>
+
+</body>
+</html>
