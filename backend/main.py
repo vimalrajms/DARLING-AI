@@ -1,11 +1,17 @@
 import os
 import re
-import time
 import jwt
 
 from datetime import datetime, timedelta, timezone
-from fastapi import FastAPI, HTTPException, Depends
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+from fastapi import (
+    FastAPI,
+    HTTPException,
+    Depends,
+    Response,
+    Request
+)
+
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from pwdlib import PasswordHash
@@ -15,30 +21,36 @@ from app.database.connection import (
     database_connection
 )
 
+
 app = FastAPI(title="DARLING Robot API")
+
+FRONTEND_ORIGINS = [
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+    "http://localhost:5501",
+    "http://127.0.0.1:5501"
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5500",
-        "http://127.0.0.1:5500",
-        "http://localhost:5501",
-        "http://127.0.0.1:5501"
-    ],
-    allow_credentials=False,
+    allow_origins=FRONTEND_ORIGINS,
+    allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization"]
+    allow_headers=["Content-Type"]
 )
 
 password_hasher = PasswordHash.recommended()
-security = HTTPBearer()
 
 SECRET_KEY = os.environ.get("DARLING_SECRET_KEY")
 
 if not SECRET_KEY or len(SECRET_KEY) < 32:
     raise RuntimeError(
-        "Set DARLING_SECRET_KEY to a random secret of at least 32 characters."
+        "Set DARLING_SECRET_KEY to a random secret "
+        "of at least 32 characters."
     )
+
+COOKIE_NAME = "darling_session"
+SESSION_HOURS = 12
 
 
 class RegisterRequest(BaseModel):
@@ -59,16 +71,38 @@ def create_token(user_id: int, username: str):
         "sub": str(user_id),
         "username": username,
         "iat": now,
-        "exp": now + timedelta(hours=12)
+        "exp": now + timedelta(hours=SESSION_HOURS)
     }
 
-    return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+    return jwt.encode(
+        payload,
+        SECRET_KEY,
+        algorithm="HS256"
+    )
 
 
-def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security)
-):
-    token = credentials.credentials
+def set_session_cookie(response: Response, token: str, request: Request):
+    is_https = request.url.scheme == "https"
+
+    response.set_cookie(
+        key=COOKIE_NAME,
+        value=token,
+        max_age=SESSION_HOURS * 60 * 60,
+        httponly=True,
+        secure=is_https,
+        samesite="lax",
+        path="/"
+    )
+
+
+def get_current_user(request: Request):
+    token = request.cookies.get(COOKIE_NAME)
+
+    if not token:
+        raise HTTPException(
+            status_code=401,
+            detail="Please log in first."
+        )
 
     try:
         payload = jwt.decode(
@@ -82,7 +116,7 @@ def get_current_user(
     except (jwt.InvalidTokenError, ValueError, KeyError):
         raise HTTPException(
             status_code=401,
-            detail="Invalid or expired login token."
+            detail="Invalid or expired login session."
         )
 
     with database_connection() as connection:
@@ -120,14 +154,21 @@ def health():
 
 
 @app.post("/api/register")
-def register(data: RegisterRequest):
+def register(
+    data: RegisterRequest,
+    request: Request,
+    response: Response
+):
     username = data.username.strip()
     display_name = data.display_name.strip()
 
     if not re.fullmatch(r"[A-Za-z0-9_]{3,30}", username):
         raise HTTPException(
             status_code=400,
-            detail="Username must contain 3-30 letters, numbers or underscores."
+            detail=(
+                "Username must contain 3-30 letters, "
+                "numbers or underscores."
+            )
         )
 
     if not display_name:
@@ -155,14 +196,14 @@ def register(data: RegisterRequest):
                 status_code=409,
                 detail="Username already exists."
             )
+
         raise
 
     token = create_token(user_id, username)
+    set_session_cookie(response, token, request)
 
     return {
         "message": "Account created successfully.",
-        "access_token": token,
-        "token_type": "bearer",
         "user": {
             "id": user_id,
             "username": username,
@@ -172,7 +213,11 @@ def register(data: RegisterRequest):
 
 
 @app.post("/api/login")
-def login(data: LoginRequest):
+def login(
+    data: LoginRequest,
+    request: Request,
+    response: Response
+):
     with database_connection() as connection:
         user = connection.execute(
             "SELECT id, username, display_name, password_hash, language "
@@ -190,11 +235,10 @@ def login(data: LoginRequest):
         )
 
     token = create_token(user["id"], user["username"])
+    set_session_cookie(response, token, request)
 
     return {
         "message": "Login successful.",
-        "access_token": token,
-        "token_type": "bearer",
         "user": {
             "id": user["id"],
             "username": user["username"],
@@ -206,6 +250,17 @@ def login(data: LoginRequest):
 
 @app.get("/api/me")
 def get_me(user: dict = Depends(get_current_user)):
-    return {
-        "user": user
-    }
+    return {"user": user}
+
+
+@app.post("/api/logout")
+def logout(request: Request, response: Response):
+    response.delete_cookie(
+        key=COOKIE_NAME,
+        path="/",
+        httponly=True,
+        secure=(request.url.scheme == "https"),
+        samesite="lax"
+    )
+
+    return {"message": "Logged out successfully."}

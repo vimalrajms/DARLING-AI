@@ -1219,3 +1219,48 @@ input:focus-visible {
         transition-duration: .01ms !important;
     }
 }
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.logout-button {
+    padding: 10px 16px;
+    border: 1px solid rgba(255, 90, 170, 0.6);
+    border-radius: 10px;
+    background: rgba(255, 50, 140, 0.1);
+    color: #ff8bc7;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.25s ease;
+}
+
+.logout-button:hover {
+    background: rgba(255, 50, 140, 0.22);
+    border-color: #ff55b5;
+    box-shadow: 0 0 18px rgba(255, 50, 140, 0.2);
+    transform: translateY(-1px);
+}
+
+@media (max-width: 520px) {
+    .header-actions {
+        gap: 8px;
+    }
+
+    .logout-button {
+        padding: 8px 10px;
+        font-size: 11px;
+    }
+
+    .online {
+        font-size: 10px;
+    }
+}

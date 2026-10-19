@@ -4,21 +4,17 @@ const authForm = document.getElementById("authForm");
 const loginTab = document.getElementById("loginTab");
 const registerTab = document.getElementById("registerTab");
 const tabIndicator = document.getElementById("tabIndicator");
-
 const formTitle = document.getElementById("formTitle");
 const formSubtitle = document.getElementById("formSubtitle");
 const submitButton = document.getElementById("submitButton");
 const submitText = document.getElementById("submitText");
-
 const displayNameGroup = document.getElementById("displayNameGroup");
 const confirmGroup = document.getElementById("confirmGroup");
 const loginOptions = document.getElementById("loginOptions");
-
 const displayNameInput = document.getElementById("displayName");
 const usernameInput = document.getElementById("username");
 const passwordInput = document.getElementById("password");
 const confirmPasswordInput = document.getElementById("confirmPassword");
-
 const passwordToggle = document.getElementById("passwordToggle");
 const rememberMe = document.getElementById("rememberMe");
 const messageBox = document.getElementById("messageBox");
@@ -29,7 +25,6 @@ const starsContainer = document.getElementById("stars");
 let currentMode = "login";
 
 
-// Show status message
 function showMessage(message, success = false) {
     messageBox.textContent = message;
     messageBox.classList.toggle("success", success);
@@ -37,7 +32,6 @@ function showMessage(message, success = false) {
 }
 
 
-// Switch between Login and Register
 function setMode(mode) {
     currentMode = mode;
 
@@ -91,7 +85,6 @@ function setMode(mode) {
 }
 
 
-// Tab buttons
 loginTab.addEventListener("click", () => {
     setMode("login");
 });
@@ -105,7 +98,6 @@ switchButton.addEventListener("click", () => {
 });
 
 
-// Password show/hide
 passwordToggle.addEventListener("click", () => {
     const isHidden = passwordInput.type === "password";
 
@@ -120,13 +112,11 @@ passwordToggle.addEventListener("click", () => {
 });
 
 
-// Generate background stars
 if (starsContainer) {
     for (let i = 0; i < 45; i++) {
         const star = document.createElement("span");
 
         star.className = "star";
-
         star.style.left = `${Math.random() * 100}%`;
         star.style.top = `${Math.random() * 100}%`;
         star.style.animationDelay = `${Math.random() * 4}s`;
@@ -137,7 +127,6 @@ if (starsContainer) {
 }
 
 
-// Register and Login API
 authForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -155,15 +144,16 @@ authForm.addEventListener("submit", async (event) => {
 
     if (password.length < 8 || password.length > 128) {
         showMessage("Password must contain 8-128 characters.");
+
         passwordInput.focus();
         return;
     }
 
     const isRegister = currentMode === "register";
 
-    if (isRegister) {
-        const displayName = displayNameInput.value.trim();
+    const displayName = displayNameInput.value.trim();
 
+    if (isRegister) {
         if (!displayName) {
             showMessage("Please enter your name.");
             displayNameInput.focus();
@@ -184,7 +174,7 @@ authForm.addEventListener("submit", async (event) => {
     const requestData = isRegister
         ? {
             username: username,
-            display_name: displayNameInput.value.trim(),
+            display_name: displayName,
             password: password
         }
         : {
@@ -198,6 +188,7 @@ authForm.addEventListener("submit", async (event) => {
     try {
         const response = await fetch(`${API_BASE}${endpoint}`, {
             method: "POST",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json"
             },
@@ -214,15 +205,9 @@ authForm.addEventListener("submit", async (event) => {
             );
         }
 
-        if (!result.access_token) {
-            throw new Error("The server did not return a login token.");
+        if (!result.user) {
+            throw new Error("The server did not return user information.");
         }
-
-        // Save session token
-        sessionStorage.setItem(
-            "darling_token",
-            result.access_token
-        );
 
         sessionStorage.setItem(
             "darling_user",
@@ -231,14 +216,14 @@ authForm.addEventListener("submit", async (event) => {
 
         showMessage(
             isRegister
-                ? "Account created successfully! Opening DARLING..."
+                ? "Account created! Opening DARLING..."
                 : "Login successful! Opening DARLING...",
             true
         );
 
         setTimeout(() => {
-            window.location.href = "index.html";
-        }, 1000);
+            window.location.href = "chat.html";
+        }, 700);
 
     } catch (error) {
         console.error("DARLING authentication error:", error);
@@ -259,5 +244,4 @@ authForm.addEventListener("submit", async (event) => {
 });
 
 
-// Initial state
 setMode("login");
